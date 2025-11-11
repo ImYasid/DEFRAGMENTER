@@ -1,6 +1,6 @@
 # 💾 DEFRAGMENTER: Clean Up the System!
 
-## 💻 Proyecto Primer Bimestre: Ingeniería en Software
+## 💻 Proyecto Primer Bimestre
 
 ¡Tu disco duro se está fragmentando y solo tú puedes salvarlo! **Defragmenter** es un **Arcade Shooter** rápido y adictivo, construido desde cero con **HTML5 Canvas** y **JavaScript**.
 
