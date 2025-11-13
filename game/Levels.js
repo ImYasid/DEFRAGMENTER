@@ -1,58 +1,56 @@
-// game/Levels.js
-
 var levels = {
-    // Datos de las 3 Oleadas/Niveles para Defragmenter
     data:[
-        {   // Oleada 1: Tutorial/Fácil
-            name: "Sector 1: Quick Scan",
-            background: 'grid-background-1',
-            enemyCount: 5,
-            enemySpeed: 50, // Píxeles por segundo (ejemplo)
+        {   
+            foreground:'desert-foreground',
+	        background:'clouds-background',
+			entities:[]
         },
-        {   // Oleada 2: Media
-            name: "Sector 2: Deep Dive",
-            background: 'grid-background-2',
-            enemyCount: 10,
-            enemySpeed: 80, 
+        {  
+             foreground:'desert-foreground',
+	        background:'clouds-background',
+			entities:[]
         },
-        {   // Oleada 3: Difícil
-            name: "Sector 3: The Core",
-            background: 'grid-background-3',
-            enemyCount: 15,
-            enemySpeed: 100, 
+        {  
+             foreground:'desert-foreground',
+	        background:'clouds-background',
+			entities:[]
         }
     ],
 
     // Inicializa la pantalla de selección de niveles (llamado desde game.init())
     init:function(){
-        // Código para generar los botones de niveles en el DOM
         var html = "";
-        for (var i = 0; i < levels.data.length; i++) {
-             html += `<input type="button" value="${i + 1}" data-level="${i}">`;
+        for (var i=0; i < levels.data.length; i++) {
+            var level = levels.data[i];
+            html += '<input type="button" value="'+(i+1)+'">';
         };
         $('#levelselectscreen').html(html);
         
-        // Clic para cargar el nivel
+        // Set the button click event handlers to load level
         $('#levelselectscreen input').click(function(){
-            levels.load($(this).data('level')); // Usa data-level para obtener el índice
+            levels.load(this.value-1);
             $('#levelselectscreen').hide();
         });
     },
 
     // Carga todos los datos y recursos para una oleada específica
     load:function(number){
-        // Configura el nivel actual en el objeto game
-        game.currentLevel = {number: number, data: levels.data[number]};
-        game.score = 0;
-        $('#score').html('Score: ' + game.score);
 
-        // ** Llama al loader para cargar recursos de esta oleada **
-        // Nota: Asume que tienes las imágenes de fondo en assets/images/backgrounds/
-        game.currentLevel.backgroundImage = loader.loadImage(`images/backgrounds/${game.currentLevel.data.background}.png`);
-        
-        // Una vez que los assets cargan, game.start() inicia el juego
+        // declare a new current level object
+        game.currentLevel = {number:number,hero:[]};
+		game.score=0;
+		$('#score').html('Score: '+game.score);
+        var level = levels.data[number];
+
+        //load the background, foreground and slingshot images
+        game.currentLevel.backgroundImage = loader.loadImage("assets/images/backgrounds/"+level.background+".png");
+        game.currentLevel.foregroundImage = loader.loadImage("assets/images/backgrounds/"+level.foreground+".png");
+        game.slingshotImage = loader.loadImage("assets/images/slingshot.png");
+        game.slingshotFrontImage = loader.loadImage("assets/images/slingshot-front.png");
+
+        //Call game.start() once the assets have loaded
         if(loader.loaded){
-            game.start();
+            game.start()
         } else {
             loader.onload = game.start;
         }

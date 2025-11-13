@@ -1,28 +1,25 @@
-// engine/loader.js
-
 var loader = {
-    loaded: true,
-    loadedCount: 0, // Assets that have been loaded so far
-    totalCount: 0, // Total number of assets that need to be loaded
+    loaded:true,
+    loadedCount:0,
+    totalCount:0,
     
-    init: function(){
-        // Verifica el soporte de audio (MP3 y OGG)
-        var mp3Support, oggSupport;
+    init:function(){
+        var mp3Support,oggSupport;
         var audio = document.createElement('audio');
-        if (audio.canPlayType) {
-            mp3Support = "" != audio.canPlayType('audio/mpeg');
-            oggSupport = "" != audio.canPlayType('audio/ogg; codecs="vorbis"');
-        } else {
-            mp3Support = false;
-            oggSupport = false; 
-        }
+    	if (audio.canPlayType) {
+       		// Currently canPlayType() returns: "", "maybe" or "probably" 
+      		mp3Support = "" != audio.canPlayType('audio/mpeg');
+      		oggSupport = "" != audio.canPlayType('audio/ogg; codecs="vorbis"');
+    	} else {
+    		//The audio tag is not supported
+    		mp3Support = false;
+    		oggSupport = false;	
+    	}
 
-        // Asigna la extensión de archivo de sonido soportada
-        loader.soundFileExtn = oggSupport ? ".ogg" : mp3Support ? ".mp3" : undefined;        
+        loader.soundFileExtn = oggSupport?".ogg":mp3Support?".mp3":undefined;        
     },
     
-    // Método para cargar una imagen
-    loadImage: function(url){
+    loadImage:function(url){
         this.totalCount++;
         this.loaded = false;
         $('#loadingscreen').show();
@@ -31,32 +28,29 @@ var loader = {
         image.onload = loader.itemLoaded;
         return image;
     },
-    
-    // Método para cargar un sonido
-    soundFileExtn: ".ogg", // Valor inicial
-    loadSound: function(url){
+    soundFileExtn:".ogg",
+    loadSound:function(url){
         this.totalCount++;
         this.loaded = false;
         $('#loadingscreen').show();
         var audio = new Audio();
-        // Carga el sonido con la extensión compatible detectada
-        audio.src = url + loader.soundFileExtn; 
-        audio.addEventListener("canplaythrough", loader.itemLoaded, false);
-        return audio;   
+        audio.src = url+loader.soundFileExtn;
+		audio.addEventListener("canplaythrough", loader.itemLoaded, false);
+        return audio;   
     },
-    
-    // Maneja la cuenta de recursos cargados
-    itemLoaded: function(){
+    itemLoaded:function(){
         loader.loadedCount++;
-        $('#loadingmessage').html('Loaded ' + loader.loadedCount + ' of ' + loader.totalCount);
+        $('#loadingmessage').html('Loaded '+loader.loadedCount+' of '+loader.totalCount);
         if (loader.loadedCount === loader.totalCount){
-            // Cuando todo está cargado...
+            // Loader has loaded completely..
             loader.loaded = true;
+            // Hide the loading screen 
             $('#loadingscreen').hide();
+            //and call the loader.onload method if it exists
             if(loader.onload){
                 loader.onload();
                 loader.onload = undefined;
             }
         }
     }
-};
+}

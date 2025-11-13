@@ -1,42 +1,53 @@
-<!DOCTYPE html>
+
 <html>
     <head>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-        <title>💾 DEFRAGMENTER: Clean Up the System! </title>
+        <title>Froot Wars</title>
         
+        <!-- ============================================== -->
+        <!--        SCRIPTS DE JAVASCRIPT MODULARES         -->
+        <!-- ============================================== -->
+        
+        <!-- 1. LIBRERÍAS DE TERCEROS (LIB) -->
+        <script src="lib/jquery.min.js" type="text/javascript" charset="utf-8"></script> 
+        
+        <!-- 2. MOTOR BASE (ENGINE) -->
+        <!-- El polyfill de animación debe cargarse primero para garantizar requestAnimationFrame. -->
+        <script src="engine/animation.js" type="text/javascript" charset="utf-8"></script>
+        <script src="engine/loader.js" type="text/javascript" charset="utf-8"></script>
+        
+        <!-- 3. MÓDULOS DEL JUEGO (GAME) -->
+        <!-- Los módulos dependientes (levels, mouse) deben definirse antes del objeto principal (game). -->
+        <script src="game/Levels.js" type="text/javascript" charset="utf-8"></script>
+        <script src="game/mouse.js" type="text/javascript" charset="utf-8"></script>
+        <script src="game/Game.js" type="text/javascript" charset="utf-8"></script>
+        
+        <!-- 4. PUNTO DE ENTRADA (MAIN) -->
+        <!-- main.js debe cargarse al final para asegurarse de que game.init() esté disponible. -->
+        <script src="main.js" type="text/javascript" charset="utf-8"></script>
+
         <link rel="stylesheet" href="styles.css" type="text/css" media="screen" charset="utf-8">
-        
-        <script src="engine/jquery.min.js" type="text/javascript"></script>
-
-        <script src="engine/entity.js" type="text/javascript"></script> 
-        <script src="engine/loader.js" type="text/javascript"></script> 
-        <script src="engine/stateManager.js" type="text/javascript"></script>
-        
-        <script src="game/Game.js" type="text/javascript"></script>
-        <script src="game/Levels.js" type="text/javascript"></script>
-        
-        <script src="game/mouse.js" type="text/javascript"></script> 
-        
-        <script src="main.js" type="text/javascript"></script>
-
     </head>
     
     <body>
         <div id="gamecontainer">
-            <canvas id="gamecanvas" width="640" height="480" class="gamelayer"></canvas>
+            <canvas id="gamecanvas" width="640" height="480" class="gamelayer">     
+            </canvas>
             
             <div id="scorescreen" class="gamelayer">
-                <img id="togglemusic" src="assets/images/icons/sound.png" alt="Toggle Music">
+                <img id="togglemusic" src="assets/images/icons/sound.png">
+                <img src="assets/images/icons/prev.png">
                 <span id="score">Score: 0</span>
             </div>
             
             <div id="gamestartscreen" class="gamelayer">
-                <img src="assets/images/icons/play.png" alt="Play Game" onclick="levels.init(); game.showLevelScreen();">
-                <br>
+                <!-- Nota: Usé la ruta corregida 'assets/images/...' -->
+                <img src="assets/images/icons/play.png" alt="Play Game" onclick = "game.showLevelScreen();"><br>
                 <img src="assets/images/icons/settings.png" alt="Settings">
             </div>
             
-            <div id="levelselectscreen" class="gamelayer"></div>
+            <div id="levelselectscreen" class="gamelayer">
+            </div>
             
             <div id="loadingscreen" class="gamelayer">
                 <div id="loadingmessage"></div>
@@ -44,18 +55,13 @@
             
             <div id="endingscreen" class="gamelayer">
                 <div>
-                    <p id="endingmessage">Message</p>
-                    <p id="playcurrentlevel" onclick="levels.load(game.currentLevel.number); game.hideScreens();">
-                        <img src="assets/images/icons/prev.png" alt="Replay"> Replay Current Level
-                    </p> 
-                    <p id="playnextlevel" onclick="levels.load(game.currentLevel.number + 1); game.hideScreens();">
-                        <img src="assets/images/icons/next.png" alt="Next"> Play Next Level 
-                    </p>             
-                    <p id="returntolevelscreen" onclick="game.showLevelScreen();">
-                        <img src="assets/images/icons/return.png" alt="Return"> Return to Level Screen
-                    </p>
+                    <p id="endingmessage">The Level Is Over Message</p>
+                    <p id="playcurrentlevel"><img src="assets/images/icons/prev.png"> Replay Current Level</p>          
+                    <p id="playnextlevel"><img src="assets/images/icons/next.png"> Play Next Level </p>               
+                    <p id="showLevelScreen"><img src="assets/images/icons/return.png"> Return to Level Screen</p>
                 </div>
-            </div>  
+            </div>  
+            
         </div>
     </body>
 </html>

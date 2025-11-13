@@ -1,34 +1,24 @@
-// engine/stateManager.js
-
-var stateManager = {
-    currentState: "intro",
-    
-    // Define todos los estados posibles para mayor claridad
-    STATES: {
-        INTRO: "intro",
-        PLAYING: "playing",
-        PAUSED: "paused",
-        LEVEL_SELECT: "level_select",
-        GAMEOVER: "gameover"
-    },
-
-    // Función para cambiar el estado
-    changeState: function(newState) {
-        this.currentState = newState;
-        
-        // Aquí se puede añadir lógica para pausar/reanudar el juego
-        if (newState === this.STATES.PLAYING) {
-            // Lógica para reanudar el bucle (si estaba pausado)
-        } else if (newState === this.STATES.PAUSED) {
-            // Lógica para pausar el bucle
-        }
-    },
-    
-    // Función para verificar el estado actual
-    is: function(state) {
-        return this.currentState === state;
+(function() {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame = 
+          window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
     }
-};
-
-// NOTA: Debes adaptar game.js para usar stateManager.changeState() 
-// en lugar de cambiar game.mode directamente.
+ 
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+ 
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}());
