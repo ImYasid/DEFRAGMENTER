@@ -231,3 +231,32 @@ var game = {
 		}
     }
 }
+
+
+// Espera a que la página esté lista
+$(function() {
+
+    // PRUEBA 1: ¿Se ejecuta este código?
+    console.log("¡jQuery listo! Buscando el botón #start-button...");
+
+    // ==========================================================
+    //  LA SOLUCIÓN: Usa .click() en lugar de .on()
+    // ==========================================================
+    $('#start-button').click(function() { 
+        
+        // PRUEBA 2: ¿Funciona el clic?
+        console.log("¡Botón presionado!");
+        
+        game.showLevelScreen();
+    });
+
+    // También cambia los otros botones a .click()
+    $('#highscores-button').click(function() {
+        console.log("Botón de Puntuaciones presionado");
+    });
+
+    $('#settings-button').click(function() {
+        console.log("Botón de Ajustes presionado");
+    });
+
+});

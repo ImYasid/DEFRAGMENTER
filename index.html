@@ -28,6 +28,7 @@
         <!-- main.js debe cargarse al final para asegurarse de que game.init() esté disponible. -->
         <script src="main.js" type="text/javascript" charset="utf-8"></script>
 
+        <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="styles.css" type="text/css" media="screen" charset="utf-8">
     </head>
     
@@ -42,13 +43,27 @@
                 <span id="score">Score: 0</span>
             </div>
             
-            <div id="gamestartscreen" class="gamelayer">
-                <!-- Nota: Usé la ruta corregida 'assets/images/...' -->
+            <!-- <div id="gamestartscreen" class="gamelayer">
                 <img src="assets/images/icons/play.png" alt="Play Game" onclick = "game.showLevelScreen();"><br>
                 <img src="assets/images/icons/settings.png" alt="Settings">
-            </div>
+            </div> -->
             
+            <div id="gamestartscreen" class="gamelayer active">
+                <h1>DEFRAGMENTER:</h1>
+                <p>Clean Up the System!</p>
+                <button id="start-button">INICIAR JUEGO</button>
+                <button id="highscores-button">PUNTUACIONES</button>
+                <button id="settings-button">AJUSTES</button>
+            </div>
+
             <div id="levelselectscreen" class="gamelayer">
+    
+                <h1 id="level-select-title">SELECCIONAR OLEADA:</h1> 
+                
+                <div id="level-buttons-container">
+                    
+                    </div>
+                
             </div>
             
             <div id="loadingscreen" class="gamelayer">

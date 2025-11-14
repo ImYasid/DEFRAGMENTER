@@ -1,77 +1,342 @@
-#gamecontainer {
-	width:640px;
-	height:480px;
-	background: url(assets/images/splashscreen.png);
-	border: 1px solid black;
+/*
+ * ESTILOS GLOBALES Y CONTENEDOR PRINCIPAL
+ */
+
+/* Aplicar la fuente y el estilo de fondo/texto neón al body */
+body {
+    font-family: 'Press Start 2P', monospace; /* Fuente principal para el juego */
+    background-color: #000; /* Fondo negro para el juego */
+    color: #66F933; /* Color de texto general verde neón */
 }
+
+#gamecontainer {
+    width: 1200px;
+    height: 800px;
+    border: 3px solid #66F933; 
+    box-shadow: 0 0 10px #66F933; 
+    position: relative;
+    overflow: hidden; 
+}
+
+/*
+ * ESTILOS DE LA CAPA GENERAL DE JUEGO (GAMELAYER)
+ */
 
 .gamelayer {
-	width:640px;
-	height:480px;
-	position:absolute;
-	display:none;
+    /* Mantener las dimensiones del contenedor principal */
+    width: 1200px;
+    height: 800px;
+    /* Configuración de neón retro */
+    background-color: #0a0a0a; /* Fondo muy oscuro, casi negro */
+    /* La cuadrícula de fondo neón */
+    background-image:
+        linear-gradient(to right, rgba(102, 249, 51, 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(102, 249, 51, 0.1) 1px, transparent 1px);
+    background-size: 25px 25px;
+
+    position: absolute; /* Para superponerse sobre el canvas/fondo */
+    top: 0;
+    left: 0;
+    z-index: 10; /* Asegura que esté por encima del canvas */
+    display: none; /* Oculto por defecto */
+    
+    /* Flexbox para centrar contenido vertical y horizontalmente */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+} 
+
+.gamelayer.active {
+    display: flex; /* Muestra solo la capa activa */
 }
 
-/* Game Starting Menu Screen */
+/* Estilo para el título de las capas */
+.gamelayer h1 {
+    font-size: 3em;
+    color: #66F933; /* Verde neón */
+    text-shadow: 0 0 8px #66F933, 0 0 15px rgba(102, 249, 51, 0.6); /* Efecto de brillo */
+    margin-bottom: 10px;
+}
+
+/* Estilo para el subtítulo/texto de las capas */
+.gamelayer p {
+    font-size: 1em;
+    color: #00FFFF; /* Cian neón */
+    margin-bottom: 40px;
+}
+
+/* Estilo para los botones */
+.gamelayer button {
+    background-color: transparent; /* Fondo transparente */
+    border: 2px solid #66F933; /* Borde verde neón */
+    color: #66F933; /* Texto verde neón */
+    padding: 15px 30px;
+    margin: 10px 0;
+    cursor: pointer;
+    font-size: 1.2em;
+    font-family: 'Press Start 2P', monospace;
+    text-transform: uppercase;
+    transition: all 0.1s ease-in-out;
+    box-shadow: 0 0 5px rgba(102, 249, 51, 0.5);
+}
+
+.gamelayer button:hover {
+    background-color: #66F933;
+    color: #000000;
+    border-color: #000000;
+    box-shadow: 0 0 10px #66F933, 0 0 20px rgba(102, 249, 51, 0.8);
+}
+
+/*
+ * ESTILOS ESPECÍFICOS DE PANTALLAS
+ */
+
+/* Game Starting Menu Screen (Necesita ajustes para Flexbox de .gamelayer) */
 #gamestartscreen {
-	padding-top:250px;
-	text-align:center;
+    /* Ya centrado por .gamelayer, se elimina padding-top:250px; y text-align:center; si usa .gamelayer.active */
 }
 
 #gamestartscreen img {
-	margin:10px;
-	cursor:pointer;
+    margin: 10px;
+    cursor: pointer;
 }
 
-/* Level Selection Screen */
+/* Contenedor principal de la pantalla de selección de nivel */
 #levelselectscreen {
-	padding-top:150px;
-	padding-left:50px;	
+    display: flex; /* Usamos flexbox para centrar y organizar los botones */
+    justify-content: center; /* Centra los elementos horizontalmente */
+    align-items: center; /* Centra los elementos verticalmente (si el padre tiene altura) */
+    flex-wrap: wrap; /* Permite que los botones pasen a la siguiente línea si no caben */
+    gap: 20px; /* Espacio entre los botones */
+    width: 100%; /* Ocupa todo el ancho */
+    height: 100%; /* Ocupa toda la altura disponible del padre */
+    padding: 20px; /* Un poco de padding general */
+    box-sizing: border-box; /* Asegura que el padding no desborde el ancho/alto */
+    background-color: transparent; /* Fondo transparente si ya tienes un grid */
 }
 
-#levelselectscreen input {
-	margin:20px;
-	cursor:pointer;
-	background:url(assets/images/icons/level.png) no-repeat;
-	color:yellow;
-	font-size: 20px;
-	width:64px;
-	height:64px;
-	border:0;
+/* Estilo para los botones de nivel (asumiendo que son <input type="button"> o <button>) */
+#levelselectscreen input,
+#levelselectscreen button { /* Añadido 'button' por si usas etiquetas <button> */
+    /* Reseteo y base */
+    margin: 0; /* Reiniciamos el margen para usar 'gap' en el contenedor */
+    cursor: pointer;
+    background: #0D1A1C; /* Fondo oscuro casi negro para contrastar con el neón */
+    color: #00FFFF; /* Cian neón */
+    font-size: 2em; /* Un poco más grande para destacar */
+    font-weight: bold; /* Más grueso */
+    text-align: center;
+    line-height: 60px; /* Centrar verticalmente el texto/número */
+    width: 70px; /* Un poco más grandes */
+    height: 70px;
+    border: 3px solid #00FFFF; /* Borde cian neón más grueso */
+    border-radius: 5px; /* Ligeramente redondeado, sin ser un círculo */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.7), inset 0 0 5px rgba(0, 255, 255, 0.5); /* Sombra exterior e interior */
+    transition: all 0.2s ease-in-out; /* Transición más suave */
+    font-family: 'Press Start 2P', monospace;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.8); /* Sombra para el texto para efecto neón */
+    position: relative; /* Para efectos de "glitch" */
+    overflow: hidden; /* Para que los pseudo-elementos de glitch no se salgan */
 }
+
+/* Efecto hover más pronunciado */
+#levelselectscreen input:hover,
+#levelselectscreen button:hover {
+    border-color: #66F933; /* Verde neón en hover */
+    color: #66F933; /* Texto verde neón en hover */
+    box-shadow: 0 0 15px #66F933, 0 0 30px rgba(102, 249, 51, 0.8), inset 0 0 8px rgba(102, 249, 51, 0.6);
+    background-color: rgba(102, 249, 51, 0.1); /* Fondo verde semitransparente */
+    transform: scale(1.05); /* Ligeramente más grande */
+    text-shadow: 0 0 8px rgba(102, 249, 51, 0.9);
+}
+
+/* Pequeño efecto activo al hacer click */
+#levelselectscreen input:active,
+#levelselectscreen button:active {
+    transform: scale(0.98); /* Se "hunde" ligeramente */
+    box-shadow: 0 0 5px #00FFFF, inset 0 0 3px #00FFFF;
+    background-color: rgba(0, 255, 255, 0.2);
+}
+
+/* Para un efecto de "glitch" o "interferencia" sutil */
+#levelselectscreen input::before,
+#levelselectscreen button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+    transition: all 0.7s ease;
+    z-index: 1; /* Para que esté por encima del fondo */
+}
+
+#levelselectscreen input:hover::before,
+#levelselectscreen button:hover::before {
+    left: 100%; /* Pasa un brillo de izquierda a derecha en hover */
+}
+
+/* Puedes añadir más estilos para los números si están en un span dentro del input, etc. */
+/* Por ejemplo, si los números están dentro de un <span>: */
+
+#levelselectscreen input span {
+    position: relative;
+    z-index: 2;
+}
+
 
 /* Loading Screen */
 #loadingscreen {
-	background:rgba(100,100,100,0.3);	
+    background: rgba(0, 0, 0, 0.8); /* Oscurecer más el fondo para el look neón */
+    /* El .gamelayer de neón ya aplica el fondo de cuadrícula, esto solo lo superpone */
 }
 
 #loadingmessage {
-    margin-top:400px;
-	text-align:center;
-	height:48px;
-	color:white;
-	background:url(assets/images/loader.gif) no-repeat center;
-	font:12px Arial;
+    margin-top: 400px;
+    text-align: center;
+    height: 48px;
+    color: #66F933; /* Texto neón */
+    text-shadow: 0 0 5px #66F933;
+    background: url(assets/images/loader.gif) no-repeat center;
+    font: 1em 'Press Start 2P', monospace; /* Usar fuente de juego */
 }
 
-/* Score Screen */
-#scorescreen  {
-    height:60px;
-    font: 32px Comic Sans MS;
-    text-shadow: 0 0 2px #000;
-	color:white;
+/* Score Screen (HUD) */
+#scorescreen {
+    height: 60px;
+    /* Ajustes de estilo neón para el HUD */
+    font-size: 1.5em; /* Tamaño de fuente ajustado */
+    font-family: 'Press Start 2P', monospace;
+    text-shadow: 0 0 5px #66F933; /* Brillo neón */
+    color: #66F933;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente para la barra */
+    position: relative;
+    padding: 5px 0;
 }
 
-#scorescreen img{
-    opacity:0.6;
-    top:10px;
-    position:relative;
-    padding-left:10px;
-    cursor:pointer;
+#scorescreen img {
+    opacity: 0.9; /* Mayor visibilidad */
+    top: 5px;
+    position: relative;
+    padding-left: 10px;
+    cursor: pointer;
+    transition: opacity 0.1s;
+}
+
+#scorescreen img:hover {
+    opacity: 1;
+    text-shadow: 0 0 5px #00FFFF; /* Brillo cian al pasar el ratón */
 }
 
 #scorescreen #score {
-	position:absolute;
-	top:5px;
-	right:20px;
+    position: absolute;
+    top: 5px;
+    right: 20px;
+}
+
+/* ==============================================
+ESTILOS DE PANTALLA DE SELECCIÓN DE NIVEL
+==============================================
+*/
+
+/* 1. CONTENEDOR PRINCIPAL (#levelselectscreen) */
+/* Este será el "organizador" principal. */
+#levelselectscreen {
+    display: flex;
+    flex-direction: column; /* ¡MUY IMPORTANTE! Pone el título ARRIBA y los botones ABAJO */
+    justify-content: center; /* Centra el contenido verticalmente */
+    align-items: center;   /* Centra el contenido horizontalmente */
+    height: 100%;          /* Ocupa toda la altura para centrar bien */
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    gap: 40px; /* Un buen espacio entre el título y el bloque de botones */
+}
+
+/* 2. TÍTULO DE LA PANTALLA (#level-select-title) */
+/* Le damos el look "Press Start 2P" con neón blanco/cian */
+#level-select-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 1.8em; /* Un buen tamaño, legible */
+    color: #FFFFFF;   /* Blanco puro para el texto */
+    text-align: center;
+    margin: 0; /* Quitar márgenes por defecto */
+    
+    /* El efecto neón principal */
+    text-shadow: 
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 20px #00FFFF,  /* Resplandor principal Cian */
+        0 0 30px #00FFFF,
+        0 0 40px #00FFFF;
+    
+    /* Animación de parpadeo (flicker) sutil */
+    animation: neon-flicker 2s infinite alternate;
+}
+
+/* 3. CONTENEDOR DE BOTONES (#level-buttons-container) */
+/* Este div organiza los botones en una cuadrícula flexible */
+#level-buttons-container {
+    display: flex; /* Mantiene los botones en línea */
+    flex-wrap: wrap; /* Si hay muchos botones, pasan a la siguiente fila */
+    justify-content: center;
+    align-items: center;
+    gap: 20px; /* El espacio entre cada botón */
+    width: 100%;
+}
+
+
+/* 4. BOTONES DE NIVEL (LOS ESTILOS QUE YA TENÍAS) */
+/* Asegúrate de que el selector apunte a los botones DENTRO del nuevo contenedor */
+#level-buttons-container input,
+#level-buttons-container button {
+    margin: 0; /* El 'gap' del contenedor ya se encarga del espacio */
+    cursor: pointer;
+    background: #0D1A1C;
+    color: #00FFFF;
+    font-size: 2em;
+    font-weight: bold;
+    text-align: center;
+    line-height: 60px;
+    width: 70px;
+    height: 70px;
+    border: 3px solid #00FFFF;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.7), inset 0 0 5px rgba(0, 255, 255, 0.5);
+    transition: all 0.2s ease-in-out;
+    font-family: 'Press Start 2P', monospace;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.8);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ... (Aquí van todos tus :hover, :active y ::before que te di antes) ... */
+#level-buttons-container input:hover,
+#level-buttons-container button:hover {
+    border-color: #66F933;
+    color: #66F933;
+    box-shadow: 0 0 15px #66F933, 0 0 30px rgba(102, 249, 51, 0.8), inset 0 0 8px rgba(102, 249, 51, 0.6);
+    background-color: rgba(102, 249, 51, 0.1);
+    transform: scale(1.05);
+    text-shadow: 0 0 8px rgba(102, 249, 51, 0.9);
+}
+
+
+/* 5. ANIMACIÓN DE PARPADEO (Opcional pero recomendado) */
+/* Añade esto al final de tu archivo CSS */
+@keyframes neon-flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    text-shadow:
+      0 0 4px #fff,
+      0 0 10px #fff,
+      0 0 18px #fff,
+      0 0 38px #00FFFF,
+      0 0 60px #00FFFF;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
 }
