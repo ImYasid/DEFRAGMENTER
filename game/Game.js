@@ -13,6 +13,57 @@ var game = {
         //Get handler for game canvas and context
         game.canvas = $('#gamecanvas')[0];
         game.context = game.canvas.getContext('2d');
+		// Entities list for gameplay (Player, Enemies, Bullets...)
+		game.entities = [];
+		game.keys = {};
+
+		// Keyboard handlers for shmup controls (arrow keys + WASD + Z/Space)
+		var keyDownHandler = function(e){
+			e = e || window.event;
+			var kc = e.which || e.keyCode;
+			if(kc === 37) { game.keys.left = true; if(e.preventDefault) e.preventDefault(); }
+			if(kc === 39) { game.keys.right = true; if(e.preventDefault) e.preventDefault(); }
+			if(kc === 38) { game.keys.up = true; if(e.preventDefault) e.preventDefault(); }
+			if(kc === 40) { game.keys.down = true; if(e.preventDefault) e.preventDefault(); }
+			if(kc === 65) { game.keys.left = true; } // A
+			if(kc === 68) { game.keys.right = true; } // D
+			if(kc === 87) { game.keys.up = true; } // W
+			if(kc === 83) { game.keys.down = true; } // S
+			if(kc === 32) { game.keys.space = true; if(e.preventDefault) e.preventDefault(); } // Space
+			if(kc === 90) { game.keys.fire = true; } // Z
+		};
+
+		var keyUpHandler = function(e){
+			e = e || window.event;
+			var kc = e.which || e.keyCode;
+			if(kc === 37) { game.keys.left = false; }
+			if(kc === 39) { game.keys.right = false; }
+			if(kc === 38) { game.keys.up = false; }
+			if(kc === 40) { game.keys.down = false; }
+			if(kc === 65) { game.keys.left = false; }
+			if(kc === 68) { game.keys.right = false; }
+			if(kc === 87) { game.keys.up = false; }
+			if(kc === 83) { game.keys.down = false; }
+			if(kc === 32) { game.keys.space = false; }
+			if(kc === 90) { game.keys.fire = false; }
+		};
+
+		// Attach handlers with jQuery if available, else fallback to native
+		if (typeof $ === 'function' && $.fn && $.fn.bind) {
+			// older jQuery supports bind; use namespaced events to allow removal later
+			$(window).bind('keydown.gamekeys', keyDownHandler);
+			$(window).bind('keyup.gamekeys', keyUpHandler);
+		} else if (typeof window.addEventListener === 'function') {
+			window.addEventListener('keydown', keyDownHandler, false);
+			window.addEventListener('keyup', keyUpHandler, false);
+		} else if (typeof window.attachEvent === 'function') {
+			window.attachEvent('onkeydown', keyDownHandler);
+			window.attachEvent('onkeyup', keyUpHandler);
+		} else {
+			// last resort
+			window.onkeydown = keyDownHandler;
+			window.onkeyup = keyUpHandler;
+		}
     },      
     showLevelScreen:function(){
         $('.gamelayer').hide();
@@ -29,10 +80,24 @@ var game = {
         $('#gamecanvas').show();
         $('#scorescreen').show();
 
-        game.mode = "intro";    
-        game.offsetLeft = 0;
-        game.ended = false;
-        game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
+		game.mode = "running";
+		game.offsetLeft = 0;
+		game.ended = false;
+		// Prepare timing for dt
+		game.lastTime = performance.now();
+
+		// Create player entity (center-left)
+		try{
+			var px = 40;
+			var py = Math.round(game.canvas.height/2 - 16);
+			game.player = new Player(px, py);
+			game.entities.push(game.player);
+		} catch(e){
+			// Player class may not be available yet; defensive
+			console.warn('Player class not available:', e);
+		}
+
+		game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
     },  
 
     
@@ -121,24 +186,48 @@ var game = {
     },
     
     animate:function(){
-        // Animate the background
-       game.handlePanning();
-       
-       // Animate the characters
-        
-        
-        //  Draw the background with parallax scrolling
-        game.context.drawImage(game.currentLevel.backgroundImage,game.offsetLeft/4,0,640,480,0,0,640,480);
-        game.context.drawImage(game.currentLevel.foregroundImage,game.offsetLeft,0,640,480,0,0,640,480);
-        
+		// Compute delta time
+		var now = performance.now();
+		var dt = (game.lastTime) ? (now - game.lastTime)/1000 : 0;
+		game.lastTime = now;
 
-        // Draw the slingshot
-        game.context.drawImage(game.slingshotImage,game.slingshotX-game.offsetLeft,game.slingshotY);
-        
-        game.context.drawImage(game.slingshotFrontImage,game.slingshotX-game.offsetLeft,game.slingshotY);
+		// Handle panning if necessary (kept for level parallax)
+		game.handlePanning();
 
-        if (!game.ended){
-            game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
-        } 
+		// Draw the background with parallax scrolling (if available)
+		if(game.currentLevel && game.currentLevel.backgroundImage){
+			game.context.drawImage(game.currentLevel.backgroundImage,game.offsetLeft/4,0,640,480,0,0,640,480);
+		} else {
+			game.context.clearRect(0,0,game.canvas.width, game.canvas.height);
+		}
+		if(game.currentLevel && game.currentLevel.foregroundImage){
+			game.context.drawImage(game.currentLevel.foregroundImage,game.offsetLeft,0,640,480,0,0,640,480);
+		}
+
+		// Update entities
+		for(var i=0;i<game.entities.length;i++){
+			var e = game.entities[i];
+			if(e && e.active && typeof e.update === 'function'){
+				e.update(dt);
+			}
+		}
+
+		// Simple collision handling placeholder (player bullets vs enemies)
+		// TODO: implement enemy class and collision responses
+
+		// Draw entities
+		for(var j=0;j<game.entities.length;j++){
+			var d = game.entities[j];
+			if(d && d.active && typeof d.draw === 'function'){
+				d.draw(game.context);
+			}
+		}
+
+		// Remove inactive entities
+		game.entities = game.entities.filter(function(ent){ return ent && ent.active; });
+
+		if (!game.ended){
+			game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
+		}
     }
 }
