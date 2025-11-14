@@ -71,14 +71,22 @@
         ctx.fillRect(Math.round(this.x), Math.round(this.y), this.width, this.height);
     };
 
-    Player.prototype.shoot = function(){
-        if(!window.game) return;
-        var bx = this.x + this.width;
-        var by = this.y + this.height/2 - 4;
-        var b = new Bullet(bx, by, 8, 8, 420);
-        b.owner = 'player';
-        window.game.entities.push(b);
-    };
+    // En entity.js
+
+    Player.prototype.shoot = function(){
+        if(!window.game) return;
+        var bx = this.x + this.width;
+        var by = this.y + this.height/2 - 4;
+        var b = new Bullet(bx, by, 8, 8, 420);
+        b.owner = 'player';
+        window.game.entities.push(b);
+
+        // --- AÑADIR ESTA LÍNEA ---
+        // (Asegúrate de que 'fire' esté en minúscula)
+        if (typeof audioManager !== 'undefined') {
+            audioManager.playSound("fire");
+        }
+    };
 
     // Bullet entity (simple forward-moving projectile)
     function Bullet(x,y,w,h,speed){

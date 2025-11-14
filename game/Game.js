@@ -1,10 +1,21 @@
 var game = {
-  // Start initializing objects, preloading assets and display start screen
     init: function(){
-        // Initialize objects   
         levels.init();
         loader.init();
         mouse.init();
+		audioManager.init();
+    
+		window.addEventListener('mousedown', audioManager.setupFirstPlayBound, false);
+        window.addEventListener('mouseup', audioManager.setupFirstPlayBound, false);
+
+        // ⚠️ BINDING DE MÉTODOS DE AUDIO
+        // Es más limpio hacerlo en Audio.js, pero lo mantenemos aquí para asegurar el contexto en Game.js si es necesario
+        audioManager.playLobbyMusic = audioManager.playLobbyMusic.bind(audioManager);
+        audioManager.playGameMusic = audioManager.playGameMusic.bind(audioManager);
+        audioManager.toggleMusic = audioManager.toggleMusic.bind(audioManager);
+        
+        // Asignación de eventos del menú HTML (botones)
+        game.setupMenuEvents();
             
         // Hide all game layers and dis\u00A0 the start screen
         $('.gamelayer').hide();
@@ -64,16 +75,24 @@ var game = {
 			window.onkeydown = keyDownHandler;
 			window.onkeyup = keyUpHandler;
 		}
-    },      
+    },     
+setupMenuEvents: function() {
+        $('#start-button').click(function() {
+            // 🚨 El audio ya se inició con el primer clic, ahora solo se cambia el estado visual
+            levels.init(); 
+            game.showLevelScreen();
+        });
+        
+        // ... (otros eventos de botones)
+    }, 
     showLevelScreen:function(){
         $('.gamelayer').hide();
         $('#levelselectscreen').show('slow');
+audioManager.playLobbyMusic();
     },
     // Game Mode
     mode:"intro", 
-    // X & Y Coordinates of the slingshot
-    slingshotX:140,
-    slingshotY:280,
+    
     start:function(){
         $('.gamelayer').hide();
         // Display the game canvas and score 
@@ -81,6 +100,7 @@ var game = {
         $('#scorescreen').show();
 
 		game.mode = "running";
+		audioManager.playGameMusic();
 		game.offsetLeft = 0;
 		game.ended = false;
 		// Prepare timing for dt
@@ -184,6 +204,7 @@ var game = {
         
         $('#endingscreen').show();
     },
+
     
     animate:function(){
 		// Compute delta time
@@ -229,8 +250,10 @@ var game = {
 		if (!game.ended){
 			game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
 		}
+		
     }
-}
+};
+
 
 
 // Espera a que la página esté lista
@@ -259,4 +282,7 @@ $(function() {
         console.log("Botón de Ajustes presionado");
     });
 
+	
+
 });
+
