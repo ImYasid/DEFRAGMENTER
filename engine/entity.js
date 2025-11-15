@@ -86,6 +86,10 @@
         this.lives = Math.max(0, this.lives - (amount || 1));
         this.invulTimer = this.invulDuration;
         // death handling
+
+        if (window.game) { window.game.triggerShake(0.4, 10); }
+
+
         if(this.lives <= 0){
             this.active = false;
             try{

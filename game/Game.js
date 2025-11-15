@@ -8,6 +8,11 @@ var game = {
     gridSize: 30,            // Tamaño de cada cuadrado de la cuadrícula
     gridColor: "rgba(102, 249, 51, 0.2)", // Verde neón con transparencia
     // --- Fin de Variables ---
+// --- AÑADIR ESTAS LÍNEAS (Variables de Vibración) ---
+    shakeDuration: 0,
+    shakeMagnitude: 0,
+    shakeX: 0,
+    shakeY: 0,
 
     init: function(){
         levels.init();
@@ -154,12 +159,46 @@ var game = {
         $('#endingscreen').show();
     },
 
+    // --- AÑADIR ESTA FUNCIÓN ---
+    /**
+     * Activa el efecto de vibración de pantalla.
+     * @param {number} duration - Duración en segundos (ej. 0.2)
+     * @param {number} magnitude - Fuerza en píxeles (ej. 4)
+     */
+    triggerShake: function(duration, magnitude) {
+        // No dejes que un shake más débil reemplace uno más fuerte
+        game.shakeDuration = Math.max(game.shakeDuration, duration);
+        game.shakeMagnitude = Math.max(game.shakeMagnitude, magnitude);
+    },
     
     animate:function(){
         // Compute delta time
         var now = performance.now();
         var dt = (game.lastTime) ? (now - game.lastTime)/1000 : 0;
         game.lastTime = now;
+
+        // vibración de pantalla
+        if (game.shakeDuration > 0) {
+            game.shakeDuration -= dt; // Reducir la duración
+            if (game.shakeDuration <= 0) {
+                // Si se acabó, resetear
+                game.shakeX = 0;
+                game.shakeY = 0;
+                game.shakeMagnitude = 0;
+            } else {
+                // Calcular un offset aleatorio
+                game.shakeX = Math.round((Math.random() - 0.5) * 2 * game.shakeMagnitude);
+                game.shakeY = Math.round((Math.random() - 0.5) * 2 * game.shakeMagnitude);
+            }
+        }
+        // --- AÑADIDO: APLICAR VIBRACIÓN (Traducción del Canvas) ---
+        // Guarda el estado "limpio" del canvas (sin offset)
+        game.context.save();
+        // Mueve todo el canvas por el offset de la vibración
+        game.context.translate(game.shakeX, game.shakeY);
+        // --- FIN DE APLICAR VIBRACIÓN ---
+
+
 
         // --- LÓGICA DE DIBUJADO DE CUADRÍCULA ---
 
@@ -274,6 +313,7 @@ var game = {
 
         // Remove inactive entities
         game.entities = game.entities.filter(function(ent){ return ent && ent.active; });
+        game.context.restore();
 
         if (!game.ended){
             game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
