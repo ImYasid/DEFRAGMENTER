@@ -42,12 +42,6 @@ var levels = {
 		$('#score').html('Score: '+game.score);
         var level = levels.data[number];
 
-        //load the background, foreground and slingshot images
-        game.currentLevel.backgroundImage = loader.loadImage("assets/images/backgrounds/"+level.background+".png");
-        game.currentLevel.foregroundImage = loader.loadImage("assets/images/backgrounds/"+level.foreground+".png");
-        game.slingshotImage = loader.loadImage("assets/images/slingshot.png");
-        game.slingshotFrontImage = loader.loadImage("assets/images/slingshot-front.png");
-
         //Call game.start() once the assets have loaded
         if(loader.loaded){
             game.start()
