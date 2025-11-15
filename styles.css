@@ -299,4 +299,64 @@ ESTILOS DE PANTALLA DE SELECCIÓN DE NIVEL (PARCHADO)
   20%, 24%, 55% {
     text-shadow: none; 
   }
+  
 }
+
+/* PANTALLA DE FIN DE JUEGO (endingscreen) */
+#endingscreen {
+    background: rgba(10, 10, 10, 0.85);
+    z-index: 15;
+    display: flex;
+    flex-direction: 
+    column;justify-content: 
+    center;align-items: center;
+}
+
+/* El div que contiene todos los mensajes de la pantalla final */
+#endingscreen div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    justify-content: center;
+}
+
+/* El mensaje principal (Ej: "Failed. Play Again?") */
+#endingmessage {
+    font-size: 3.5em; /* ¡Más grande! */
+    color: #FF0000; /* Color ROJO de "Game Over" */
+    text-shadow:0 0 5px #FF0000,0 0 10px #FF0000,0 0 20px #FF0000; /* Brillo neón rojo */
+    margin-bottom: 40px; /* Más espacio */}
+
+/* Estilo para TODAS las opciones clicables (Replay, Next, Return) */
+#playcurrentlevel,
+#playnextlevel,
+#showLevelScreen {/* --- Arreglo de Alineación --- */
+    display: flex;
+    align-items: center; /* ¡Centra verticalmente el ícono y el texto! */
+    justify-content: center;/* --- Fin del Arreglo --- */
+    font-size: 1.2em;
+    color: #00FFFF; /* Color CIAN (como el jugador) */
+    text-shadow: 0 0 5px #00FFFF;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 10px 15px;
+    border: 2px solid transparent; /* Borde invisible para el hover */
+    border-radius: 5px;
+    transition: all 0.2s ease;
+margin-bottom: 1px;
+}
+
+/* Estilo de los Íconos dentro de las opciones */
+
+/* ¡Efecto HOVER para las opciones! */
+#playcurrentlevel:hover,
+#playnextlevel:hover,
+#showLevelScreen:hover {
+    color: #FFFFFF; /* Blanco brillante */
+    background-color: rgba(0, 255, 255, 0.1); /* Fondo cian sutil */
+    border-color: #00FFFF; /* Borde cian */
+    transform: scale(1.05); /* Ligeramente más grande */
+    text-shadow: 0 0 10px #FFFFFF, 0 0 15px #00FFFF;}
+
+#endingscreen img:hover {filter: drop-shadow(0 0 5px #FFFFFF);}

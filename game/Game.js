@@ -75,11 +75,29 @@ var game = {
             window.addEventListener('keydown', keyDownHandler, false);
             window.addEventListener('keyup', keyUpHandler, false);
         }
-    },     
+        $('#playcurrentlevel').click(function() {
+            $('#endingscreen').hide(); // Oculta la pantalla final
+            // Vuelve a cargar el nivel actual (el número ya está en game.currentLevelNumber)
+            levels.load(game.currentLevelNumber); 
+        });
+
+        // Botón: PLAY NEXT LEVEL
+        $('#playnextlevel').click(function() {
+            $('#endingscreen').hide(); // Oculta la pantalla final
+            // Carga el siguiente nivel
+            levels.load(game.currentLevelNumber + 1); 
+        });
+
+        // Botón: RETURN TO LEVEL SCREEN
+        $('#showLevelScreen').click(function() {
+            $('#endingscreen').hide(); // Oculta la pantalla final
+            game.showLevelScreen(); // Muestra el selector de niveles
+        });
+    },  
+       
     
     setupMenuEvents: function() {
         $('#start-button').click(function() {
-            // [CORREGIDO] levels.init() solo se llama una vez, en game.init()
             game.showLevelScreen();
         });
         
@@ -96,7 +114,10 @@ var game = {
     showLevelScreen:function(){
         $('.gamelayer').hide();
         $('#levelselectscreen').show('slow');
-        audioManager.playLobbyMusic();
+        if (typeof audioManager !== 'undefined') {
+            audioManager.stopAllMusic();
+            audioManager.playLobbyMusic();
+        }
     },
     
     // Game Mode
@@ -105,6 +126,7 @@ var game = {
     spawnBossImmediately: true,
     
     start:function(){
+        game.entities = [];
         $('.gamelayer').hide();
         // Display the game canvas and score 
         $('#gamecanvas').show();
@@ -152,14 +174,14 @@ var game = {
         // (Tu función showEndingScreen se mantiene igual)
         if (mode=="level-success"){
             if(game.currentLevel.number<levels.data.length-1){
-                $('#endingmessage').html('Level Complete. Well Done!!!');
+                $('#endingmessage').html('Level Completed!');
                 $("#playnextlevel").show();
             } else {
-                $('#endingmessage').html('All Levels Complete. Well Done!!!');
+                $('#endingmessage').html('YOU WIN!');
                 $("#playnextlevel").hide();
             }
         } else if (mode=="level-failure"){        
-            $('#endingmessage').html('Failed. Play Again?');
+            $('#endingmessage').html('You Failed');
             $("#playnextlevel").hide();
         }        
         
