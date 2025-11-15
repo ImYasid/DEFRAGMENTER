@@ -91,16 +91,30 @@
 
 
         if(this.lives <= 0){
+            if (typeof audioManager !== 'undefined') {
+                audioManager.playSound("explosion"); 
+            }
+            if(window.game) {
+                var centerX = this.x + this.width / 2;
+                var centerY = this.y + this.height / 2;
+                // La hacemos un poco más grande que una bala (ej. radio 50)
+                var playerExplosion = new Explosion(centerX, centerY, 50, 0.5);
+                window.game.entities.push(playerExplosion);
+            }
+
             this.active = false;
-            try{
-                if(window.game){
-                    window.game.ended = true;
-                    if(typeof window.game.showEndingScreen === 'function'){
-                        window.game.showEndingScreen('level-failure');
-                    }
-                }
-            } catch(e){}
-        }
+            
+            setTimeout(function() {
+                try{
+                    if(window.game){
+                        window.game.ended = true;
+                        if(typeof window.game.showEndingScreen === 'function'){
+                            window.game.showEndingScreen('level-failure');
+                        }
+                    }
+                } catch(e){}
+            }, 2000); // 2000 milisegundos = 2 segundos
+        }
     };
 
     // En entity.js
@@ -271,14 +285,97 @@
     };
 
     Boss.prototype.takeDamage = function(amount){
-        this.health -= amount || 1;
-        this.hitFlash = 0.8; // flash for a short time
-        if(this.health <= 0){ this.active = false; }
-    };
+        // No hacer nada si el jefe ya está muerto
+        if (this.health <= 0) return;
+
+        this.health -= amount || 1;
+        this.hitFlash = 0.8; // flash por un corto tiempo
+        
+        // Comprobar si ESTE golpe fue el que lo mató
+        if(this.health <= 0){ 
+            // --- ¡COMIENZA LA SECUENCIA DE MUERTE! ---
+            this.active = false; // Oculta al jefe (el cuadrado rojo)
+
+            if (window.game) {
+                // 1. Vibra MUCHO (0.8 segundos, 15 píxeles de fuerza)
+                window.game.triggerShake(1, 20);
+
+                // 2. Sonido de explosión
+                if (typeof audioManager !== 'undefined') {
+                    audioManager.playSound("explosion"); 
+                }
+
+                // 3. Animación de explosión (GRANDE)
+                var centerX = this.x + this.width / 2;
+                var centerY = this.y + this.height / 2;
+                // (Radio 150, Duración 1.5 segundos)
+                var bossExplosion = new Explosion(centerX, centerY, 300, 1.5);
+                window.game.entities.push(bossExplosion);
+
+                // 4. Mostrar pantalla de Nivel Superado (después de 2 segundos)
+                setTimeout(function() {
+                    try {
+                        window.game.ended = true;
+                        if(typeof window.game.showEndingScreen === 'function'){
+                            window.game.showEndingScreen('level-success');
+                        }
+                    } catch(e) {}
+                }, 2000); // 2 segundos
+            }
+        }
+    };
+
+    // ==========================================================
+    //              CLASE DE EXPLOSIÓN
+    // ==========================================================
+    /**
+     * Una entidad temporal que dibuja un círculo que se expande y se desvanece.
+     * @param {number} x - Posición central X
+     * @param {number} y - Posición central Y
+     * @param {number} [maxRadius] - Radio máximo que alcanzará
+     * @param {number} [duration] - Duración en segundos
+     */
+    function Explosion(x, y, maxRadius, duration){
+        // Llama al constructor base (tamaño no importa, solo posición)
+        Entity.call(this, x, y, 0, 0);
+        
+        this.maxRadius = maxRadius || 40; // Radio final (en píxeles)
+        this.duration = duration || 0.4; // Duración (en segundos)
+        this.timer = 0; // Temporizador interno
+        this.active = true;
+    }
+    Explosion.prototype = Object.create(Entity.prototype);
+    Explosion.prototype.constructor = Explosion;
+
+    Explosion.prototype.update = function(dt){
+        this.timer += dt;
+        if(this.timer >= this.duration){
+            this.active = false; // Se destruye al terminar
+        }
+    };
+
+    Explosion.prototype.draw = function(ctx){
+        // Calcula el progreso (de 0 a 1)
+        var progress = this.timer / this.duration;
+        
+        // El radio se expande con el tiempo
+        var currentRadius = this.maxRadius * progress;
+        
+        // La opacidad se desvanece (de 1 a 0)
+        var alpha = 1 - progress;
+        
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2, false);
+        
+        // Color blanco-amarillo brillante que se desvanece
+        ctx.fillStyle = "rgba(255, 255, 200, " + alpha + ")"; 
+        ctx.fill();
+    };
 
     // Expose to global namespace
     window.Entity = Entity;
     window.Player = Player;
     window.Bullet = Bullet;
     window.Boss = Boss;
+    window.Explosion = Explosion; // <-- AÑADE ESTA LÍNEA
 })();
