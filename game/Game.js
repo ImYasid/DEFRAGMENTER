@@ -94,6 +94,8 @@ var game = {
     
     // Game Mode
     mode:"intro", 
+    // Set to true to spawn a boss immediately when the level starts
+    spawnBossImmediately: true,
     
     start:function(){
         $('.gamelayer').hide();
@@ -115,6 +117,15 @@ var game = {
             var py = Math.round(game.canvas.height/2 - 16);
             game.player = new Player(px, py); // <-- Asume que Player está en entity.js
             game.entities.push(game.player);
+            // Example: spawn a boss proportional to the player size
+            // You can enable immediate boss spawn by setting `game.spawnBossImmediately = true`.
+            if(game.spawnBossImmediately){
+                var scale = 3; // boss will be roughly 3x the player's size
+                var bx = Math.max(0, game.canvas.width - Math.round(game.player.width * scale) - 20);
+                var by = Math.round(game.canvas.height/2 - (game.player.height * scale)/2);
+                var boss = new Boss(bx, by, game.player, scale);
+                game.entities.push(boss);
+            }
         } catch(e){
             console.warn('Player class not available:', e);
         }
@@ -177,6 +188,32 @@ var game = {
             game.context.lineTo(game.canvas.width, y);
         }
         game.context.stroke(); // Dibuja todas las líneas
+        // HUD: draw player lives
+        try{
+            if(game.player){
+                var lives = (typeof game.player.lives === 'number') ? game.player.lives : 0;
+                var px = 12, py = 8;
+                game.context.font = '14px monospace';
+                game.context.textAlign = 'left';
+                game.context.fillStyle = '#fff';
+                game.context.fillText('Lives:', px, py + 12);
+                // draw small boxes for each life
+                for(var li=0; li< (game.player.lives || 0); li++){
+                    var lx = px + 60 + li*20;
+                    var ly = py;
+                    // flash if invulnerable
+                    if(game.player.invulTimer > 0){ game.context.fillStyle = '#fff'; }
+                    else { game.context.fillStyle = game.player.color || '#0ff'; }
+                    game.context.fillRect(lx, ly + 6, 14, 14);
+                }
+                // draw empty slots (up to 3) for clarity
+                for(var ei= (game.player.lives || 0); ei<3; ei++){
+                    var lx2 = px + 60 + ei*20;
+                    game.context.strokeStyle = '#555';
+                    game.context.strokeRect(lx2, py + 6, 14, 14);
+                }
+            }
+        } catch(e){}
         // --- FIN DE LÓGICA DE CUADRÍCULA ---
 
         // Update entities
@@ -184,6 +221,46 @@ var game = {
             var e = game.entities[i];
             if(e && e.active && typeof e.update === 'function'){
                 e.update(dt);
+            }
+        }
+
+        // Simple collision handling: player bullets vs enemies (Boss, other enemies)
+        for(var bi=0; bi<game.entities.length; bi++){
+            var be = game.entities[bi];
+            if(!be || !be.active) continue;
+            if(typeof be === 'object' && be.constructor && be.constructor.name === 'Bullet' && be.owner === 'player'){
+                // check against all other entities
+                for(var ei=0; ei<game.entities.length; ei++){
+                    var oe = game.entities[ei];
+                    if(!oe || !oe.active) continue;
+                    if(oe === be) continue;
+                    if(oe instanceof Player) continue; // don't hit player
+                    if(be.intersects(oe)){
+                        if(typeof oe.takeDamage === 'function'){
+                            oe.takeDamage(10); // arbitrary damage value
+                        } else {
+                            // default: deactivate target
+                            oe.active = false;
+                        }
+                        be.active = false; // bullet consumed
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Collision: boss (or enemy) bullets -> player
+        for(var b2=0; b2<game.entities.length; b2++){
+            var bullet = game.entities[b2];
+            if(!bullet || !bullet.active) continue;
+            if(bullet.constructor && bullet.constructor.name === 'Bullet' && bullet.owner === 'boss'){
+                if(game.player && game.player.active && bullet.intersects(game.player)){
+                    // apply damage and consume bullet
+                    if(typeof game.player.takeDamage === 'function'){
+                        game.player.takeDamage(1); // boss bullets deal 1 life per hit
+                    }
+                    bullet.active = false;
+                }
             }
         }
 
