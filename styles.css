@@ -126,7 +126,10 @@ body {
     font-family: 'Press Start 2P', monospace;
     text-shadow: 0 0 5px #66F933; /* Brillo neón */
     color: #66F933;
-    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente para la barra */
+
+    background-image: none;
+    background-color: rgba(0, 0, 0, 0.5);
+
     position: relative;
     padding: 5px 0;
     
