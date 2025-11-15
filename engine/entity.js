@@ -107,6 +107,10 @@
             setTimeout(function() {
                 try{
                     if(window.game){
+                        if (typeof audioManager !== 'undefined') {
+                            audioManager.stopAllMusic(); // Detiene la música del nivel
+                            audioManager.playSound("gameOver"); // Reproduce el sonido de "Game Over"
+                        }
                         window.game.ended = true;
                         if(typeof window.game.showEndingScreen === 'function'){
                             window.game.showEndingScreen('level-failure');
@@ -315,6 +319,10 @@
                 // 4. Mostrar pantalla de Nivel Superado (después de 2 segundos)
                 setTimeout(function() {
                     try {
+                        if (window.game && typeof audioManager !== 'undefined') {
+                            audioManager.stopAllMusic(); // Detiene la música del nivel
+                            audioManager.playSound("youWin");
+                        }
                         window.game.ended = true;
                         if(typeof window.game.showEndingScreen === 'function'){
                             window.game.showEndingScreen('level-success');

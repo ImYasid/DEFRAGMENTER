@@ -17,6 +17,8 @@ var audioManager = {
         // Ejemplo de SFX, deberías tener archivos reales
         this.sfx.fire = loader.loadSound("assets/audio/Fire"); 
         this.sfx.explosion = loader.loadSound("assets/audio/Explosion");
+        this.sfx.gameOver = loader.loadSound("assets/audio/GameOver");
+        this.sfx.youWin = loader.loadSound("assets/audio/YouWin");
 
         // 3. Configurar el control de mute/unmute
         $('#togglemusic').click(function() {

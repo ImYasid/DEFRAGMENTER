@@ -4,7 +4,7 @@ var game = {
 
     // --- Variables de la Cuadrícula ---
     backgroundOffset: 0,     // Posición actual del scroll de la cuadrícula
-    backgroundSpeed: -40,     // Velocidad de scroll (píxeles por segundo)
+    backgroundSpeed: -50,     // Velocidad de scroll (píxeles por segundo)
     gridSize: 30,            // Tamaño de cada cuadrado de la cuadrícula
     gridColor: "rgba(102, 249, 51, 0.2)", // Verde neón con transparencia
     // --- Fin de Variables ---
@@ -13,6 +13,8 @@ var game = {
     shakeMagnitude: 0,
     shakeX: 0,
     shakeY: 0,
+    rsgState: "", // Estado actual: "Ready", "Set", "Go!"
+    rsgTimer: 0,  // Temporizador para cada estado
 
     init: function(){
         levels.init();
@@ -107,8 +109,13 @@ var game = {
         // Display the game canvas and score 
         $('#gamecanvas').show();
         $('#scorescreen').show();
+        // --- MODIFICADO ---
+        // En lugar de 'running', empezamos en 'ready'
+        game.mode = "ready"; 
+        game.rsgState = "Ready";
+        game.rsgTimer = 1.0; // 1 segundo para "Ready"
+        // --- FIN DE MODIFICACIÓN ---
 
-        game.mode = "running";
         audioManager.playGameMusic();
         
         
@@ -170,12 +177,59 @@ var game = {
         game.shakeDuration = Math.max(game.shakeDuration, duration);
         game.shakeMagnitude = Math.max(game.shakeMagnitude, magnitude);
     },
-    
+    updateReadySetGo: function(dt) {
+        if (game.mode !== "ready") return;
+        game.rsgTimer -= dt; // Descontar tiempo
+
+        if (dt === 0) return; 
+        game.rsgTimer -= dt; // Descontar tiempo
+
+        if (game.rsgTimer <= 0) {
+            // Si el tiempo se acabó, cambia al siguiente estado
+            if (game.rsgState === "Ready") {
+                game.rsgState = "Set";
+                game.rsgTimer = 1.0; // 1 segundo para "Set"
+            } else if (game.rsgState === "Set") {
+                game.rsgState = "Go!";
+                game.rsgTimer = 0.5; // 0.5 segundos para "Go!"
+            } else if (game.rsgState === "Go!") {
+                // Se acabó
+                game.rsgState = "";
+                game.mode = "running"; // ¡INICIA EL JUEGO!
+            }
+        }
+    },
+
+    drawReadySetGo: function(ctx) {
+        // Si no hay texto que mostrar, salir
+        if (game.rsgState === "") return;
+
+        var canvasWidth = game.canvas.width;
+        var canvasHeight = game.canvas.height;
+        
+        // Estilo del texto
+        ctx.font = "bold 50px 'Press Start 2P', monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // Opacidad aleatoria para efecto "glitch"
+        var alpha = 0.8 + Math.random() * 0.2;
+        
+        // Sombra/Borde negro
+        ctx.fillStyle = "rgba(0, 0, 0, " + (alpha * 0.5) + ")";
+        ctx.fillText(game.rsgState, canvasWidth / 2 + 3, canvasHeight / 2 + 3);
+        
+        // Texto principal (Blanco brillante)
+        ctx.fillStyle = "rgba(255, 255, 255, " + alpha + ")";
+        ctx.fillText(game.rsgState, canvasWidth / 2, canvasHeight / 2);
+    },
+    // --- FIN DE FUNCIONES AÑADIDAS ---
     animate:function(){
         // Compute delta time
         var now = performance.now();
-        var dt = (game.lastTime) ? (now - game.lastTime)/1000 : 0;
+        var dt = (game.lastTime) ? (now - game.lastTime) / 1000 : 0;
         game.lastTime = now;
+        game.updateReadySetGo(dt);
 
         // vibración de pantalla
         if (game.shakeDuration > 0) {
@@ -314,6 +368,7 @@ var game = {
         // Remove inactive entities
         game.entities = game.entities.filter(function(ent){ return ent && ent.active; });
         game.context.restore();
+        game.drawReadySetGo(game.context);
 
         if (!game.ended){
             game.animationFrame = window.requestAnimationFrame(game.animate,game.canvas);
