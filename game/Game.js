@@ -15,6 +15,10 @@ var game = {
     shakeY: 0,
     rsgState: "", // Estado actual: "Ready", "Set", "Go!"
     rsgTimer: 0,  // Temporizador para cada estado
+    // Boss spawn countdown (seconds)
+    bossCountdownRemaining: 0,
+    bossCountdownActive: false,
+    bossToSpawn: null,
 
     init: function(){
         levels.init();
@@ -151,14 +155,36 @@ var game = {
             var py = Math.round(game.canvas.height/2 - 16);
             game.player = new Player(px, py); // <-- Asume que Player está en entity.js
             game.entities.push(game.player);
-            // Example: spawn a boss proportional to the player size
-            // You can enable immediate boss spawn by setting `game.spawnBossImmediately = true`.
-            if(game.spawnBossImmediately){
-                var scale = 3; // boss will be roughly 3x the player's size
+            // Clear any previous scheduled spawn or wave timers / countdowns
+            if(game.bossSpawnTimer){ clearTimeout(game.bossSpawnTimer); game.bossSpawnTimer = null; }
+            if(game.waveSpawnIntervalId){ clearInterval(game.waveSpawnIntervalId); game.waveSpawnIntervalId = null; }
+            game.waves = null; game.waveIndex = 0; game.waveSpawning = false; game.waitingForWaveClear = false;
+            // reset boss countdown state
+            game.bossCountdownActive = false;
+            game.bossCountdownRemaining = 0;
+            game.bossToSpawn = null;
+            game.pendingBoss = false;
+
+            var lvl = (typeof levels !== 'undefined' && levels.data && levels.data[game.currentLevelNumber]) ? levels.data[game.currentLevelNumber] : null;
+            var bossCfg = (lvl && lvl.boss) ? lvl.boss : null;
+            // If the level defines wave entities, start the wave system and spawn boss after waves
+            if(game.spawnBossImmediately && lvl && Array.isArray(lvl.entities) && lvl.entities.length > 0){
+                game.startWaves(lvl.entities, bossCfg);
+            } else if(game.spawnBossImmediately) {
+                // No waves defined: spawn boss directly (respect spawnDelay if provided)
+                var scale = (bossCfg && bossCfg.scale) ? bossCfg.scale : 3;
                 var bx = Math.max(0, game.canvas.width - Math.round(game.player.width * scale) - 20);
                 var by = Math.round(game.canvas.height/2 - (game.player.height * scale)/2);
-                var boss = new Boss(bx, by, game.player, scale);
-                game.entities.push(boss);
+                if(bossCfg && typeof bossCfg.spawnDelay === 'number' && bossCfg.spawnDelay > 0){
+                    // schedule via countdown (so we can show warning)
+                    game.pendingBoss = true;
+                    game.bossCountdownRemaining = bossCfg.spawnDelay;
+                    game.bossCountdownActive = true;
+                    game.bossToSpawn = { bx: bx, by: by, scale: scale, cfg: bossCfg };
+                } else {
+                    var boss = new Boss(bx, by, game.player, scale, bossCfg || {});
+                    game.entities.push(boss);
+                }
             }
         } catch(e){
             console.warn('Player class not available:', e);
@@ -246,6 +272,91 @@ var game = {
         ctx.fillText(game.rsgState, canvasWidth / 2, canvasHeight / 2);
     },
     // --- FIN DE FUNCIONES AÑADIDAS ---
+    // ---------------------
+    // Wave / Spawner system
+    // ---------------------
+    startWaves: function(waves, bossCfg){
+        if(!Array.isArray(waves) || waves.length === 0) return;
+        // clear any existing
+        if(game.waveSpawnIntervalId){ clearInterval(game.waveSpawnIntervalId); game.waveSpawnIntervalId = null; }
+        game.waves = waves;
+        game.waveIndex = 0;
+        game.waveSpawning = false;
+        game.waitingForWaveClear = false;
+        game.bossCfgForLevel = bossCfg || null;
+        // start first wave after short delay so player is ready
+        setTimeout(function(){ game._startNextWave(); }, 500);
+    },
+
+    _startNextWave: function(){
+        if(!game.waves) return;
+        if(game.waveIndex >= game.waves.length){
+            // all waves spawned; now wait for remaining enemies to be cleared
+            game.waitingForWaveClear = true;
+            return;
+        }
+        var wave = game.waves[game.waveIndex];
+        var count = wave.count || 1;
+        var spawned = 0;
+        game.waveSpawning = true;
+        game.pendingSpawns = count;
+        var spawnFn = function(){
+            if(game.ended) return;
+            if(spawned >= count){
+                // finished spawning this wave
+                clearInterval(game.waveSpawnIntervalId);
+                game.waveSpawnIntervalId = null;
+                game.waveSpawning = false;
+                game.waitingForWaveClear = true; // wait until enemies are cleared before next wave
+                game.waveIndex++;
+                return;
+            }
+            game._spawnEnemy(wave);
+            spawned++;
+            game.pendingSpawns = Math.max(0, count - spawned);
+        };
+        var interval = Math.max(50, wave.spawnInterval || 800);
+        // spawn first immediately
+        spawnFn();
+        game.waveSpawnIntervalId = setInterval(spawnFn, interval);
+    },
+
+    _spawnEnemy: function(wave){
+        try{
+            var y = (typeof wave.yMin === 'number' && typeof wave.yMax === 'number') ? Math.round(wave.yMin + Math.random() * (wave.yMax - wave.yMin)) : Math.round(Math.random() * (game.canvas.height - 40));
+            var x = game.canvas.width + 40;
+            var cfg = {
+                speed: wave.speed || 120,
+                health: wave.health || 1,
+                score: wave.score || 10,
+                type: wave.type || 'grunt',
+                color: wave.color || '#f0a',
+                bobAmplitude: wave.bobAmplitude || 0,
+                bobFrequency: wave.bobFrequency || 0
+            };
+            var e = new Enemy(x, y, 28, 28, cfg);
+            game.entities.push(e);
+        } catch(e){}
+    },
+
+    _onWavesComplete: function(){
+        // called after all waves have been spawned and cleared
+        var bossCfg = game.bossCfgForLevel || null;
+        if(!game.spawnBossImmediately) return;
+        var scale = (bossCfg && bossCfg.scale) ? bossCfg.scale : 3;
+        var bx = Math.max(0, game.canvas.width - Math.round(game.player.width * scale) - 20);
+        var by = Math.round(game.canvas.height/2 - (game.player.height * scale)/2);
+        if(bossCfg && typeof bossCfg.spawnDelay === 'number' && bossCfg.spawnDelay > 0){
+            // schedule boss spawn via countdown so warning can be shown
+            game.pendingBoss = true;
+            game.bossCountdownRemaining = bossCfg.spawnDelay;
+            game.bossCountdownActive = true;
+            game.bossToSpawn = { bx: bx, by: by, scale: scale, cfg: bossCfg };
+        } else {
+            var boss = new Boss(bx, by, game.player, scale, bossCfg || {});
+            game.entities.push(boss);
+        }
+    },
     animate:function(){
         // Compute delta time
         var now = performance.now();
@@ -368,13 +479,34 @@ var game = {
         for(var b2=0; b2<game.entities.length; b2++){
             var bullet = game.entities[b2];
             if(!bullet || !bullet.active) continue;
-            if(bullet.constructor && bullet.constructor.name === 'Bullet' && bullet.owner === 'boss'){
+            if(bullet.constructor && bullet.constructor.name === 'Bullet' && (bullet.owner === 'boss' || bullet.owner === 'enemy')){
                 if(game.player && game.player.active && bullet.intersects(game.player)){
                     // apply damage and consume bullet
                     if(typeof game.player.takeDamage === 'function'){
                         game.player.takeDamage(1); // boss bullets deal 1 life per hit
                     }
                     bullet.active = false;
+                }
+            }
+        }
+
+        // Collision: enemies (contact) -> player
+        for(var ei=0; ei<game.entities.length; ei++){
+            var en = game.entities[ei];
+            if(!en || !en.active) continue;
+            var isEnemy = (en.constructor && en.constructor.name === 'Enemy') || (typeof Enemy !== 'undefined' && en instanceof Enemy);
+            if(isEnemy){
+                if(game.player && game.player.active && en.intersects && en.intersects(game.player)){
+                    try{
+                        // Damage the player by 1 life (you can tune this)
+                        if(typeof game.player.takeDamage === 'function'){
+                            game.player.takeDamage(1);
+                        }
+                        // Destroy the enemy on contact (spawn small explosion but do not award score)
+                        en.active = false;
+                        var ex = new Explosion(en.x + en.width/2, en.y + en.height/2, 28, 0.45);
+                        game.entities.push(ex);
+                    } catch(e){}
                 }
             }
         }
@@ -389,7 +521,109 @@ var game = {
 
         // Remove inactive entities
         game.entities = game.entities.filter(function(ent){ return ent && ent.active; });
+
+        // Wave progression detection: if we are waiting for current wave to clear and there are no enemies alive, proceed
+        try{
+            if(game.waitingForWaveClear){
+                var anyEnemy = false;
+                for(var ei=0; ei<game.entities.length; ei++){
+                    var ent = game.entities[ei];
+                    if(!ent) continue;
+                    if((ent.constructor && ent.constructor.name === 'Enemy') || (typeof Enemy !== 'undefined' && ent instanceof Enemy)){
+                        anyEnemy = true; break;
+                    }
+                }
+                if(!anyEnemy){
+                    game.waitingForWaveClear = false;
+                    // If there are more waves, start next; otherwise call waves complete
+                    if(game.waves && game.waveIndex < game.waves.length){
+                        game._startNextWave();
+                    } else {
+                        // all waves done
+                        game._onWavesComplete();
+                    }
+                }
+            }
+        } catch(e){}
         game.context.restore();
+        // Draw boss HP bar on HUD (outside of shake effect)
+        try{
+            var bossEnt = null;
+            for(var bi=0; bi<game.entities.length; bi++){
+                var e = game.entities[bi];
+                if(!e) continue;
+                if((e.constructor && e.constructor.name === 'Boss') || (typeof Boss !== 'undefined' && e instanceof Boss)){
+                    bossEnt = e; break;
+                }
+            }
+            if(bossEnt && bossEnt.active){
+                var ctx = game.context;
+                var barW = Math.min(600, Math.round(game.canvas.width * 0.6));
+                var barH = 18;
+                var bx = Math.round((game.canvas.width - barW)/2);
+                var by = 12;
+                // background
+                ctx.save();
+                ctx.globalAlpha = 0.9;
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(bx-4, by-4, barW+8, barH+8);
+                // empty
+                ctx.fillStyle = '#222';
+                ctx.fillRect(bx, by, barW, barH);
+                // health
+                var ratio = Math.max(0, Math.min(1, bossEnt.health / bossEnt.maxHealth));
+                ctx.fillStyle = '#f55';
+                ctx.fillRect(bx, by, Math.round(barW * ratio), barH);
+                // border and text
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(bx, by, barW, barH);
+                ctx.fillStyle = '#fff';
+                ctx.font = "12px 'Press Start 2P', monospace";
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('BOSS', bx + barW/2, by + barH/2 + 1);
+                ctx.restore();
+            }
+        } catch(e){}
+
+        // Boss incoming countdown handling + draw
+        try{
+            if(game.bossCountdownActive && game.bossCountdownRemaining > 0){
+                game.bossCountdownRemaining = Math.max(0, game.bossCountdownRemaining - dt);
+                var seconds = Math.ceil(game.bossCountdownRemaining);
+                var ctx = game.context;
+                ctx.save();
+                ctx.font = "bold 36px 'Press Start 2P', monospace";
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                // background box
+                var msg = 'BOSS INCOMING: ' + seconds;
+                var mw = ctx.measureText(msg).width + 40;
+                var mx = Math.round(game.canvas.width/2 - mw/2);
+                var my = Math.round(game.canvas.height/2 - 140);
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(mx, my, mw, 56);
+                ctx.fillStyle = '#ff4444';
+                ctx.fillText(msg, game.canvas.width/2, my + 28);
+                ctx.restore();
+                if(game.bossCountdownRemaining <= 0){
+                    // spawn boss now
+                    try{
+                        if(game.bossToSpawn && !game.ended){
+                            var s = game.bossToSpawn.scale || 3;
+                            var boss = new Boss(game.bossToSpawn.bx, game.bossToSpawn.by, game.player, s, game.bossToSpawn.cfg || {});
+                            game.entities.push(boss);
+                        }
+                    } catch(e){}
+                    game.bossCountdownActive = false;
+                    game.bossCountdownRemaining = 0;
+                    game.bossToSpawn = null;
+                    game.pendingBoss = false;
+                }
+            }
+        } catch(e){}
+
         game.drawReadySetGo(game.context);
 
         if (!game.ended){
