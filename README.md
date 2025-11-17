@@ -48,9 +48,34 @@ Para iniciar el juego, solo necesitas abrir el archivo `index.html` en tu navega
 ## 📂 Estructura del Proyecto
 
 El proyecto está organizado en una estructura modular que separa el motor del juego, la lógica específica del juego y las bibliotecas de terceros.
-DEFRAGMENTER/ ├── assets/ │ ├── audio/ │ └── images/ ├── engine/ │ ├── animation.js │ ├── entity.js │ ├── loader.js │ └── stateManager.js ├── game/ │ ├── Audio.js │ ├── Game.js │ ├── Levels.js │ └── mouse.js ├── lib/ │ ├── Box2dWeb-2.1.a.3.min.js │ └── jquery.min.js ├── net/ │ ├── index.html ├── main.js ├── README.md └── styles.css
 
-### 📁 Descripción de Carpetas
+```
+DEFRAGMENTER/
+├── assets/
+│   ├── audio/
+│   └── images/
+├── engine/
+│   ├── animation.js
+│   ├── entity.js
+│   ├── loader.js
+│   └── stateManager.js
+├── game/
+│   ├── Audio.js
+│   ├── Game.js
+│   ├── Levels.js
+│   └── mouse.js
+├── lib/
+│   ├── Box2dWeb-2.1.a.3.min.js
+│   └── jquery.min.js
+├── net/
+│
+├── index.html
+├── main.js
+├── README.md
+└── styles.css
+```
+
+### 🔍 Descripción de Carpetas
 
 * **assets/**: Contiene todos los recursos multimedia del juego.
     * `audio/`: Almacena la música de fondo (BGM) y los efectos de sonido (SFX) como `Fire.mp3`, `Explosion.mp3`, `GameOver.mp3`, etc.
