@@ -118,47 +118,116 @@ body {
     font: 1em 'Press Start 2P', monospace; /* Usar fuente de juego */
 }
 
-/* Score Screen (HUD) */
+
+/* ========================================================================= */
+/* 3. PANTALLA DE JUEGO (score, HUD)                                     */
+/* ========================================================================= */
+
 #scorescreen {
-    height: 60px;
-    /* Ajustes de estilo neón para el HUD */
-    font-size: 1.5em; /* Tamaño de fuente ajustado */
-    font-family: 'Press Start 2P', monospace;
-    text-shadow: 0 0 5px #66F933; /* Brillo neón */
-    color: #66F933;
-
-    background-image: none;
-    background-color: rgba(0, 0, 0, 0.5);
-
-    position: relative;
-    padding: 5px 0;
-    
-    /* El HUD no debería usar flex-direction: column, así que lo anulamos */
-    flex-direction: row; 
-    justify-content: flex-start; /* Alinea los iconos a la izquierda */
-    align-items: center; /* Centra verticalmente los iconos */
-}
-
-#scorescreen img {
-    opacity: 0.9; 
-    top: 0; /* Reseteado */
-    position: relative;
-    padding-left: 10px;
-    cursor: pointer;
-    transition: opacity 0.1s;
-}
-
-#scorescreen img:hover {
-    opacity: 1;
-    text-shadow: 0 0 5px #00FFFF; /* Brillo cian al pasar el ratón */
-}
-
-#scorescreen #score {
     position: absolute;
-    top: 5px; /* Ajusta esto si es necesario con el nuevo flexbox */
-    right: 20px;
-    line-height: 50px; /* Centra verticalmente */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; /* Cubre todo para posicionar elementos internos */
+    pointer-events: none; /* Permite clics a través del canvas */
+
+    background-color: transparent;
+    background-image: none;
+
+
+    display: flex; /* Sigue usando flex para alinear los elementos del HUD */
+    flex-direction: column; 
+    align-items: center; 
+    z-index: 10; /* Asegura que el HUD esté sobre el canvas (que no tiene z-index) */
 }
+
+/* Contenedor para botones superiores izquierdos */
+#controls-top-left {
+    position: absolute; /* Posicionamiento absoluto para esquinas */
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 10px; /* Espacio entre botones */
+    pointer-events: all; /* Permite clics en los botones */
+}
+
+.hud-button {
+    width: 30px;
+    height: 30px;
+    background-color: rgba(102, 249, 51, 0.2); /* Fondo verde semitransparente */
+    border: 1px solid #66F933; /* Borde verde neón */
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.1s ease-in-out;
+    pointer-events: all; /* Asegura que el botón sea clicable */
+}
+
+.hud-button:hover {
+    background-color: rgba(102, 249, 51, 0.4);
+    box-shadow: 0 0 8px #66F933;
+}
+
+.hud-button img {
+    width: 80%;
+    height: 80%;
+    filter: brightness(1.2); /* Un poco más brillante */
+}
+
+/* --- ESTILOS PARA EL NUEVO CONTENEDOR DE VIDAS --- */
+#player-lives {
+    position: absolute; /* Lo sacamos del flujo normal para posicionarlo */
+    top: 10px; /* Separado del borde superior */
+    left: 50%; 
+    transform: translateX(-50%); 
+    display: flex;
+    align-items: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: #fff;
+    pointer-events: none; /* No queremos que esto bloquee clics */
+}
+
+#player-lives .label {
+    margin-right: 10px;
+}
+
+#player-lives .lives-container {
+    display: flex;
+    gap: 5px; /* Espacio entre las cajitas de vida */
+}
+
+.life-box {
+    width: 16px; /* Tamaño de cada cajita */
+    height: 16px;
+    background-color: #00FFFF; /* Color cian por defecto */
+    border: 1px solid #00FFFF;
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5); /* Brillo cian */
+}
+
+.life-box.empty {
+    background-color: transparent;
+    border-color: #555; /* Borde gris para vidas vacías */
+    box-shadow: none;
+}
+/* --- FIN ESTILOS DE VIDAS --- */
+
+#score-display {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: #fff;
+    text-shadow: 0 0 5px #fff;
+    pointer-events: none;
+}
+#score-display span {
+    color: #66F933; /* Color verde para el número del score */
+}
+
 
 /* ==============================================
 ESTILOS DE PANTALLA DE SELECCIÓN DE NIVEL (PARCHADO)
@@ -360,3 +429,19 @@ margin-bottom: 1px;
     text-shadow: 0 0 10px #FFFFFF, 0 0 15px #00FFFF;}
 
 #endingscreen img:hover {filter: drop-shadow(0 0 5px #FFFFFF);}
+
+/* Estilo para los botones de "Volver" en los menús */
+.back-button {
+    margin-top: 30px;
+    font-size: 1em !important; /* Un poco más pequeño que los botones principales */
+    color: #FF0000 !important; /* Rojo para "salir" */
+    border-color: #FF0000 !important;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+.back-button:hover {
+    background-color: #FF0000 !important;
+    color: #000000 !important;
+    border-color: #000000 !important;
+    box-shadow: 0 0 10px #FF0000, 0 0 20px rgba(255, 0, 0, 0.8);
+}

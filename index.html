@@ -39,10 +39,22 @@
             </canvas>
             
             <div id="scorescreen" class="gamelayer">
-                <img id="togglemusic" src="assets/images/icons/sound.png">
-                <img src="assets/images/icons/prev.png">
-                <span id="score">Score: 0</span>
-            </div>
+            <div id="controls-top-left">
+                <p id="togglemusic" class="hud-button">
+                    <img src="assets/images/icons/sound.png" alt="Toggle Music">
+                </p>
+                                <p id="returntolevels" class="hud-button" style="display:none;">
+                    <img src="assets/images/icons/return.png" alt="Return to levels">
+                </p>
+            </div>
+
+                        <div id="player-lives">
+                <span class="label">Lives:</span>
+                <div class="lives-container">
+                                    </div>
+            </div>
+                        <div id="score-display">Score: <span>0</span></div>
+        </div>
             
             <div id="gamestartscreen" class="gamelayer active">
                 <h1>DEFRAGMENTER:</h1>
@@ -74,6 +86,17 @@
                     <p id="showLevelScreen">Return to Level Screen</p>
                 </div>
             </div>
+        <div id="highscoresscreen" class="gamelayer">
+                        <h1>PUNTUACIONES</h1>
+                        <p>¡Próximamente!</p>
+                        <button class="back-button">VOLVER</button>
+                    </div>
+
+                    <div id="settingsscreen" class="gamelayer">
+                        <h1>AJUSTES</h1>
+                        <p>Controles de Audio (Próximamente)</p>
+                        <button class="back-button">VOLVER</button>
+                    </div>
             
         </div>
     </body>

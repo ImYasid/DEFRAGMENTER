@@ -97,23 +97,35 @@ var game = {
             $('#endingscreen').hide(); // Oculta la pantalla final
             game.showLevelScreen(); // Muestra el selector de niveles
         });
+$('#returntolevels').click(function() {
+            if (confirm("¿Estás seguro de que quieres salir del nivel actual?")) {
+                game.ended = true; // Marca el juego como terminado para detener el loop
+                game.showLevelScreen();
+            }
+        });
+$('.back-button').click(function() {
+            game.showStartScreen(); // Vuelve al menú principal
+        });
     },  
        
     
-    setupMenuEvents: function() {
-        $('#start-button').click(function() {
-            game.showLevelScreen();
-        });
-        
-        // Añadimos los otros botones que estaban en el bloque duplicado
-        $('#highscores-button').click(function() {
-            console.log("Botón de Puntuaciones presionado");
-        });
+    setupMenuEvents: function() {
+        $('#start-button').click(function() {
+            game.showLevelScreen();
+        });
+        
+        // --- MODIFICADO ---
+        $('#highscores-button').click(function() {
+            // console.log("Botón de Puntuaciones presionado");
+            game.showScreen("#highscoresscreen");
+        });
 
-        $('#settings-button').click(function() {
-            console.log("Botón de Ajustes presionado");
-        });
-    }, 
+        $('#settings-button').click(function() {
+            // console.log("Botón de Ajustes presionado");
+            game.showScreen("#settingsscreen");
+        });
+        // --- FIN DE MODIFICACIÓN ---
+    },
     
     showLevelScreen:function(){
         $('.gamelayer').hide();
@@ -123,6 +135,23 @@ var game = {
             audioManager.playLobbyMusic();
         }
     },
+    /**
+     * Muestra una capa/pantalla de menú específica.
+     * @param {string} screenId - El ID de jQuery de la pantalla (ej. "#settingsscreen")
+     */
+    showScreen: function(screenId) {
+        $('.gamelayer').hide(); // Oculta todas las capas
+        $(screenId).show(); // Muestra la capa deseada
+    },
+
+    /**
+     * Vuelve al menú principal desde cualquier submenú (Ajustes, Puntuaciones).
+     */
+    showStartScreen: function() {
+        $('.gamelayer').hide();
+        $('#gamestartscreen').show();
+    },
+    
     
     // Game Mode
     mode:"intro", 
@@ -416,29 +445,31 @@ var game = {
         game.context.stroke(); // Dibuja todas las líneas
         // HUD: draw player lives
         try{
-            if(game.player){
-                var lives = (typeof game.player.lives === 'number') ? game.player.lives : 0;
-                var px = 12, py = 8;
-                game.context.font = '14px monospace';
-                game.context.textAlign = 'left';
-                game.context.fillStyle = '#fff';
-                game.context.fillText('Lives:', px, py + 12);
-                // draw small boxes for each life
-                for(var li=0; li< (game.player.lives || 0); li++){
-                    var lx = px + 60 + li*20;
-                    var ly = py;
-                    // flash if invulnerable
-                    if(game.player.invulTimer > 0){ game.context.fillStyle = '#fff'; }
-                    else { game.context.fillStyle = game.player.color || '#0ff'; }
-                    game.context.fillRect(lx, ly + 6, 14, 14);
-                }
-                // draw empty slots (up to 3) for clarity
-                for(var ei= (game.player.lives || 0); ei<3; ei++){
-                    var lx2 = px + 60 + ei*20;
-                    game.context.strokeStyle = '#555';
-                    game.context.strokeRect(lx2, py + 6, 14, 14);
-                }
-            }
+            if (game.player) {
+            var livesContainer = $('#player-lives .lives-container');
+            var maxLives = 3; // Suponiendo 3 vidas máximas
+            
+            // Limpia el contenedor de vidas para redibujar
+            livesContainer.empty();
+
+            for (var i = 0; i < maxLives; i++) {
+                var lifeBox = $('<div>').addClass('life-box');
+                
+                // Si estamos dibujando una vida que el jugador no tiene, es "vacía"
+                if (i >= game.player.lives) {
+                    lifeBox.addClass('empty');
+                } 
+                // Si es invulnerable, le damos un efecto de "flash" (cambio de color)
+                else if (game.player.invulTimer > 0 && Math.floor(game.lastTime / 100) % 2 === 0) {
+                    lifeBox.css({ 
+                        'background-color': '#FFF', 
+                        'box-shadow': '0 0 8px rgba(255, 255, 255, 0.8)' 
+                    });
+                }
+                livesContainer.append(lifeBox);
+            }
+        }
+    $('#score-display span').html(game.score);
         } catch(e){}
         // --- FIN DE LÓGICA DE CUADRÍCULA ---
 
